@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecionando...</title>
+    <!-- Redireciona após 0 segundos -->
+    <meta http-equiv="refresh" content="0; url=COLE_AQUI_SUA_URL_DO_APPS_SCRIPT">
+</head>
+<body>
+    <p>Se não for redirecionado automaticamente, <a href="COLE_AQUI_SUA_URL_DO_APPS_SCRIPT">clique aqui</a>.</p>
+</body>
+</html>
