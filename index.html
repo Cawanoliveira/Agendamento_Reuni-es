@@ -240,6 +240,22 @@
             }
         }
 
+        iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        iframe.loaded {
+            opacity: 1;
+        }
+
         .performance-warning {
             position: fixed;
             bottom: 10px;
@@ -251,26 +267,6 @@
             font-size: 11px;
             display: none;
             z-index: 10000;
-        }
-
-        /* Fallback para quando não consegue carregar */
-        .fallback-message {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #1a1a1a;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            z-index: 10001;
-            border: 1px solid #FF6B00;
-        }
-
-        .fallback-message a {
-            color: #FF6B00;
-            text-decoration: none;
         }
     </style>
 </head>
@@ -308,31 +304,32 @@
         Conexão lenta detectada
     </div>
 
-    <div class="fallback-message" id="fallbackMessage">
-        <p>⚠️ Não foi possível carregar automaticamente.</p>
-        <p><a href="https://script.google.com/macros/s/AKfycbxZ0Yy10ux0Nty1tPJsdYQ4nG--dmddYpoypO9Bgpvv1oCDdF7cF7CQY9-kp1W59lrD/exec" target="_blank">Clique aqui para acessar o sistema</a></p>
-    </div>
+    <iframe
+        src="about:blank"
+        id="appFrame"
+        allow="camera; microphone; fullscreen"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation">
+    </iframe>
 
     <script>
-        // URL DO SEU WEB APP
+        // URL DO SEU WEB APP (SUBSTITUA PELA SUA URL)
         const APP_URL = "https://script.google.com/macros/s/AKfycbxZ0Yy10ux0Nty1tPJsdYQ4nG--dmddYpoypO9Bgpvv1oCDdF7cF7CQY9-kp1W59lrD/exec";
 
         const loading = document.getElementById('loading');
+        const appFrame = document.getElementById('appFrame');
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
         const progressPercent = document.getElementById('progressPercent');
         const perfWarning = document.getElementById('perfWarning');
-        const fallbackMessage = document.getElementById('fallbackMessage');
         const particlesContainer = document.getElementById('particles');
 
-        let isRedirected = false;
+        let isLoaded = false;
         let progressInterval;
-        let timeoutId;
 
         function detectConnection() {
             if ('connection' in navigator) {
                 const conn = navigator.connection;
-                if (conn.saveData || conn.effectiveType?.includes('2g') || conn.effectiveType?.includes('slow-2g')) {
+                if (conn.saveData || conn.effectiveType?.includes('2g')) {
                     perfWarning.style.display = 'block';
                     return 'slow';
                 }
@@ -357,9 +354,8 @@
 
         function simulateProgress() {
             let progress = 0;
-            const connectionSpeed = detectConnection();
-            const step = connectionSpeed === 'slow' ? 1.5 : 2.5;
-            const intervalTime = connectionSpeed === 'slow' ? 80 : 50;
+            const step = detectConnection() === 'slow' ? 1.5 : 2.5;
+            const intervalTime = detectConnection() === 'slow' ? 80 : 50;
 
             progressInterval = setInterval(() => {
                 if (progress < 90) {
@@ -374,46 +370,28 @@
                     } else if (progress < 60) {
                         progressText.textContent = "Conectando ao servidor...";
                     } else {
-                        progressText.textContent = "Preparando o sistema...";
+                        progressText.textContent = "Carregando aplicação...";
                     }
                 }
             }, intervalTime);
         }
 
-        function completeLoading() {
-            if (isRedirected) return;
-            isRedirected = true;
+        function onIframeLoad() {
+            if (isLoaded) return;
+            isLoaded = true;
             
             clearInterval(progressInterval);
             progressBar.style.width = '100%';
             progressPercent.textContent = '100%';
-            progressText.textContent = "Redirecionando...";
+            progressText.textContent = "Pronto!";
             
             setTimeout(() => {
                 loading.classList.add('hidden');
                 setTimeout(() => {
+                    appFrame.classList.add('loaded');
                     loading.style.display = 'none';
-                    // Redireciona para o app real
-                    window.location.href = APP_URL;
                 }, 400);
             }, 300);
-        }
-
-        function handleTimeout() {
-            if (isRedirected) return;
-            
-            clearInterval(progressInterval);
-            progressBar.style.width = '100%';
-            progressPercent.textContent = '100%';
-            progressText.textContent = "Acessando sistema...";
-            
-            setTimeout(() => {
-                loading.classList.add('hidden');
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                    window.location.href = APP_URL;
-                }, 400);
-            }, 200);
         }
 
         function init() {
@@ -421,27 +399,17 @@
             createParticles();
             simulateProgress();
             
-            // Tenta detectar se o usuário já está no app
-            timeoutId = setTimeout(handleTimeout, 4000);
+            appFrame.addEventListener('load', onIframeLoad);
+            appFrame.src = APP_URL;
             
-            // Verifica se a página foi carregada de dentro do próprio app
-            if (window.self !== window.top) {
-                // Está dentro de um iframe, não faz nada
-                clearTimeout(timeoutId);
-                completeLoading();
-            }
+            setTimeout(() => {
+                if (!isLoaded) {
+                    onIframeLoad();
+                }
+            }, 5000);
         }
 
-        // Força o redirecionamento quando a página carrega
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                if (!isRedirected) {
-                    completeLoading();
-                }
-            }, 2000);
-        });
-
-        init();
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
