@@ -1,55 +1,447 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Big Reuniões</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://i.ibb.co/Q39DJJzq/image.png">
+    <title>Big Reuniões - Sistema de Agendamento</title>
+    <meta name="description" content="Sistema de gestão de agendamentos Big Reuniões">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF6B00">
+    <link rel="icon" type="image/png" href="https://i.ibb.co/Q39DJJzq/image.png">
+    <link rel="preconnect" href="https://script.google.com"> 
+    <link rel="dns-prefetch" href="https://script.google.com">
+
     <style>
-        body {
+        html, body {
             margin: 0;
             padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background: #0a0a0a;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .loading-container {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #FF6B00 0%, #FF8C42 100%);
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        .loader {
+            justify-content: center;
+            height: 100vh;
+            color: white;
             text-align: center;
-            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            z-index: 9999;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .dot {
-            width: 48px;
-            height: 48px;
-            border: 5px solid white;
-            border-top-color: transparent;
+
+        .loading-container.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #FF6B00;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px auto;
+            animation: particleMove 1.8s linear infinite;
+            opacity: 0;
         }
+
+        @keyframes particleMove {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% {
+                transform: translateY(-100px) translateX(20px);
+                opacity: 0;
+            }
+        }
+
+        .logo-container {
+            margin-bottom: 30px;
+            position: relative;
+            width: 180px;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 0 40px rgba(255, 107, 0, 0.6);
+            animation: logoPulse 1.2s ease-in-out infinite alternate;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes logoPulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 30px rgba(255, 107, 0, 0.6);
+            }
+            100% {
+                transform: scale(1.08);
+                box-shadow: 0 0 50px rgba(255, 107, 0, 0.8);
+            }
+        }
+
+        .ring {
+            position: absolute;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            border: 2px solid rgba(255, 107, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: #FF6B00;
+            border-right-color: #FF8C00;
+            border-bottom-color: #FF6B00;
+            border-left-color: #FF8C00;
+            animation: spin 1.5s linear infinite;
+            z-index: 1;
+        }
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        a {
-            color: white;
-            text-decoration: underline;
+
+        .loading-text {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #FF6B00, #FF8C00, #FF6B00);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientText 3s ease infinite;
+        }
+
+        @keyframes gradientText {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        .loading-subtext {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 40px;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        .progress-container {
+            width: 280px;
+            margin-bottom: 30px;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #FF6B00, #FF8C00, #FF6B00);
+            background-size: 200% 100%;
+            border-radius: 10px;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            animation: gradientMove 2s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% center; }
+            50% { background-position: 100% center; }
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent);
+            animation: shine 1.5s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .status-dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            animation: dotPulse 1.4s ease-in-out infinite;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes dotPulse {
+            0%, 60%, 100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            30% {
+                transform: scale(1.3);
+                opacity: 1;
+                background: #FF8C00;
+            }
+        }
+
+        .performance-warning {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255, 69, 0, 0.1);
+            color: #FF4500;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            display: none;
+            z-index: 10000;
+        }
+
+        /* Fallback para quando não consegue carregar */
+        .fallback-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            z-index: 10001;
+            border: 1px solid #FF6B00;
+        }
+
+        .fallback-message a {
+            color: #FF6B00;
+            text-decoration: none;
         }
     </style>
-    <script>
-        // Redirecionamento direto - ÚNICA FORMA QUE FUNCIONA
-        window.location.replace("https://script.google.com/macros/s/AKfycbxZ0Yy10ux0Nty1tPJsdYQ4nG--dmddYpoypO9Bgpvv1oCDdF7cF7CQY9-kp1W59lrD/exec");
-    </script>
 </head>
 <body>
-    <div class="loader">
-        <div class="dot"></div>
-        <p>Redirecionando para o sistema Big Reuniões...</p>
-        <p style="font-size: 14px; margin-top: 20px;">
-            Se não for redirecionado automaticamente, 
-            <a href="https://script.google.com/macros/s/AKfycbxZ0Yy10ux0Nty1tPJsdYQ4nG--dmddYpoypO9Bgpvv1oCDdF7cF7CQY9-kp1W59lrD/exec">clique aqui</a>
-        </p>
+
+    <div class="loading-container" id="loading">
+        <div class="particles" id="particles"></div>
+
+        <div class="logo-container">
+            <img class="logo-image" src="https://i.ibb.co/Q39DJJzq/image.png" alt="Big Reuniões Logo">
+            <div class="ring"></div>
+        </div>
+
+        <div class="loading-text">Big Reuniões</div>
+        <div class="loading-subtext">Sistema de Agendamento de Salas</div>
+
+        <div class="progress-container">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <div class="progress-info">
+                <span id="progressText">Iniciando...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+        </div>
+
+        <div class="status-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
     </div>
+
+    <div class="performance-warning" id="perfWarning">
+        Conexão lenta detectada
+    </div>
+
+    <div class="fallback-message" id="fallbackMessage">
+        <p>⚠️ Não foi possível carregar automaticamente.</p>
+        <p><a href="https://script.google.com/macros/s/AKfycbxZ0Yy10ux0Nty1tPJsdYQ4nG--dmddYpoypO9Bgpvv1oCDdF7cF7CQY9-kp1W59lrD/exec" target="_blank">Clique aqui para acessar o sistema</a></p>
+    </div>
+
+    <script>
+        // URL DO SEU WEB APP
+        const APP_URL = "https://script.google.com/macros/s/AKfycbxZ0Yy10ux0Nty1tPJsdYQ4nG--dmddYpoypO9Bgpvv1oCDdF7cF7CQY9-kp1W59lrD/exec";
+
+        const loading = document.getElementById('loading');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const progressPercent = document.getElementById('progressPercent');
+        const perfWarning = document.getElementById('perfWarning');
+        const fallbackMessage = document.getElementById('fallbackMessage');
+        const particlesContainer = document.getElementById('particles');
+
+        let isRedirected = false;
+        let progressInterval;
+        let timeoutId;
+
+        function detectConnection() {
+            if ('connection' in navigator) {
+                const conn = navigator.connection;
+                if (conn.saveData || conn.effectiveType?.includes('2g') || conn.effectiveType?.includes('slow-2g')) {
+                    perfWarning.style.display = 'block';
+                    return 'slow';
+                }
+            }
+            return 'normal';
+        }
+
+        function createParticles() {
+            const particleCount = 15;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = '100vh';
+                particle.style.animationDelay = `${Math.random() * 2}s`;
+                particle.style.animationDuration = `${1 + Math.random() * 1.5}s`;
+                particle.style.width = `${Math.random() * 4 + 2}px`;
+                particle.style.height = particle.style.width;
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function simulateProgress() {
+            let progress = 0;
+            const connectionSpeed = detectConnection();
+            const step = connectionSpeed === 'slow' ? 1.5 : 2.5;
+            const intervalTime = connectionSpeed === 'slow' ? 80 : 50;
+
+            progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += step;
+                    if (progress > 90) progress = 90;
+                    
+                    progressBar.style.width = `${progress}%`;
+                    progressPercent.textContent = `${Math.round(progress)}%`;
+                    
+                    if (progress < 30) {
+                        progressText.textContent = "Inicializando...";
+                    } else if (progress < 60) {
+                        progressText.textContent = "Conectando ao servidor...";
+                    } else {
+                        progressText.textContent = "Preparando o sistema...";
+                    }
+                }
+            }, intervalTime);
+        }
+
+        function completeLoading() {
+            if (isRedirected) return;
+            isRedirected = true;
+            
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            progressPercent.textContent = '100%';
+            progressText.textContent = "Redirecionando...";
+            
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    // Redireciona para o app real
+                    window.location.href = APP_URL;
+                }, 400);
+            }, 300);
+        }
+
+        function handleTimeout() {
+            if (isRedirected) return;
+            
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            progressPercent.textContent = '100%';
+            progressText.textContent = "Acessando sistema...";
+            
+            setTimeout(() => {
+                loading.classList.add('hidden');
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                    window.location.href = APP_URL;
+                }, 400);
+            }, 200);
+        }
+
+        function init() {
+            detectConnection();
+            createParticles();
+            simulateProgress();
+            
+            // Tenta detectar se o usuário já está no app
+            timeoutId = setTimeout(handleTimeout, 4000);
+            
+            // Verifica se a página foi carregada de dentro do próprio app
+            if (window.self !== window.top) {
+                // Está dentro de um iframe, não faz nada
+                clearTimeout(timeoutId);
+                completeLoading();
+            }
+        }
+
+        // Força o redirecionamento quando a página carrega
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (!isRedirected) {
+                    completeLoading();
+                }
+            }, 2000);
+        });
+
+        init();
+    </script>
 </body>
 </html>
