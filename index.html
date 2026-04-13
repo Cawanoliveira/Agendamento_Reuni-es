@@ -1,23 +1,95 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Agendamento de Reuniões</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Big Reuniões</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Favicon externo -->
+  <link rel="icon" href="https://i.ibb.co/Q39DJJzq/image.png">
+  <link rel="shortcut icon" href="https://i.ibb.co/Q39DJJzq/image.png">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #0f0f0f;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Loader container */
+    #loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f0f0f;
+      z-index: 9999;
+      transition: opacity 0.4s ease;
+    }
+
+    /* A bolinha */
+    .dot {
+      width: 14px;
+      height: 14px;
+      background: #ffffff;
+      border-radius: 50%;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.4;
+      }
+      50% {
+        transform: scale(1.8);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 0.4;
+      }
+    }
+
+    iframe {
+      border: none;
+      width: 100%;
+      height: 100%;
+      visibility: hidden;
+    }
+  </style>
 </head>
+
 <body>
-    <iframe src="https://script.google.com/macros/s/AKfycbww33o5-ORebAHdtscJFQDeoy7diFhr9EgyTkqiB50Kxj6kcJDjvKW9TCWegD5vThM/exec"></iframe>
+
+  <!-- Loader -->
+  <div id="loader">
+    <div class="dot"></div>
+  </div>
+
+  <!-- App -->
+  <iframe
+    id="app"
+    src="https://script.google.com/macros/s/AKfycbzTGdC0PMRKyWWwK1t7aesFwTtMkAZYfWzg-o55I8EbY2lBePV48r2I_XfvaCb2hFA2cw/exec">
+  </iframe>
+
+  <script>
+    const iframe = document.getElementById('app');
+    const loader = document.getElementById('loader');
+
+    iframe.addEventListener('load', () => {
+      loader.style.opacity = '0';
+      setTimeout(() => {
+        loader.style.display = 'none';
+        iframe.style.visibility = 'visible';
+      }, 400);
+    });
+  </script>
+
 </body>
 </html>
